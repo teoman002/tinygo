@@ -7,6 +7,7 @@ import (
 	"errors"
 	"strings"
 
+	"github.com/tinygo-org/tinygo/llvmutil"
 	"tinygo.org/x/go-llvm"
 )
 
@@ -86,7 +87,7 @@ func (fr *frame) evalBasicBlock(bb, incoming llvm.BasicBlock, indent string) (re
 		case !inst.IsAAllocaInst().IsNil():
 			allocType := inst.Type().ElementType()
 			alloca := llvm.AddGlobal(fr.Mod, allocType, fr.pkgName+"$alloca")
-			alloca.SetInitializer(getZeroValue(allocType))
+			alloca.SetInitializer(llvmutil.GetZeroValue(allocType))
 			alloca.SetLinkage(llvm.InternalLinkage)
 			fr.locals[inst] = &LocalValue{
 				Underlying: alloca,
@@ -180,7 +181,7 @@ func (fr *frame) evalBasicBlock(bb, incoming llvm.BasicBlock, indent string) (re
 				// Special case for runtime.trackPointer calls.
 				// Note: this might not be entirely sound in some rare cases
 				// where the map is stored in a dirty global.
-				uses := getUses(inst)
+				uses := llvmutil.GetUses(inst)
 				if len(uses) == 1 {
 					use := uses[0]
 					if !use.IsACallInst().IsNil() && !use.CalledValue().IsAFunction().IsNil() && use.CalledValue().Name() == "runtime.trackPointer" {
@@ -234,7 +235,7 @@ func (fr *frame) evalBasicBlock(bb, incoming llvm.BasicBlock, indent string) (re
 			switch {
 			case callee.Name() == "runtime.alloc":
 				// heap allocation
-				users := getUses(inst)
+				users := llvmutil.GetUses(inst)
 				var resultInst = inst
 				if len(users) == 1 && !users[0].IsABitCastInst().IsNil() {
 					// happens when allocating something other than i8*
@@ -253,7 +254,7 @@ func (fr *frame) evalBasicBlock(bb, incoming llvm.BasicBlock, indent string) (re
 					allocType = llvm.ArrayType(allocType, elementCount)
 				}
 				alloc := llvm.AddGlobal(fr.Mod, allocType, fr.pkgName+"$alloc")
-				alloc.SetInitializer(getZeroValue(allocType))
+				alloc.SetInitializer(llvmutil.GetZeroValue(allocType))
 				alloc.SetLinkage(llvm.InternalLinkage)
 				result := &LocalValue{
 					Underlying: alloc,
@@ -312,7 +313,7 @@ func (fr *frame) evalBasicBlock(bb, incoming llvm.BasicBlock, indent string) (re
 				stringType := fr.Mod.GetTypeByName("runtime._string")
 				retPtr := llvm.ConstGEP(global, getLLVMIndices(fr.Mod.Context().Int32Type(), []uint32{0, 0}))
 				retLen := llvm.ConstInt(stringType.StructElementTypes()[1], uint64(len(result)), false)
-				ret := getZeroValue(stringType)
+				ret := llvmutil.GetZeroValue(stringType)
 				ret = llvm.ConstInsertValue(ret, retPtr, []uint32{0})
 				ret = llvm.ConstInsertValue(ret, retLen, []uint32{1})
 				fr.locals[inst] = &LocalValue{fr.Eval, ret}
@@ -335,7 +336,7 @@ func (fr *frame) evalBasicBlock(bb, incoming llvm.BasicBlock, indent string) (re
 				sliceType := inst.Type()
 				retPtr := llvm.ConstGEP(global, getLLVMIndices(fr.Mod.Context().Int32Type(), []uint32{0, 0}))
 				retLen := llvm.ConstInt(sliceType.StructElementTypes()[1], uint64(len(result)), false)
-				ret := getZeroValue(sliceType)
+				ret := llvmutil.GetZeroValue(sliceType)
 				ret = llvm.ConstInsertValue(ret, retPtr, []uint32{0}) // ptr
 				ret = llvm.ConstInsertValue(ret, retLen, []uint32{1}) // len
 				ret = llvm.ConstInsertValue(ret, retLen, []uint32{2}) // cap
