@@ -890,7 +890,12 @@ func (i2c I2C) readByte() byte {
 
 // SPI
 type SPI struct {
-	Bus *sam.SERCOM_SPI_Type
+	Bus   *sam.SERCOM_SPI_Type
+	SCK   Pin
+	MOSI  Pin
+	MISO  Pin
+	DOpad int
+	DIpad int
 }
 
 // SPIConfig is used to store config info for SPI.
@@ -905,12 +910,12 @@ type SPIConfig struct {
 
 // Configure is intended to setup the SPI interface.
 func (spi SPI) Configure(config SPIConfig) {
-	config.SCK = SPI0_SCK_PIN
-	config.MOSI = SPI0_MOSI_PIN
-	config.MISO = SPI0_MISO_PIN
+	config.SCK = spi.SCK
+	config.MOSI = spi.MOSI
+	config.MISO = spi.MISO
 
-	doPad := spiTXPad2SCK3
-	diPad := sercomRXPad0
+	doPad := spi.DOpad
+	diPad := spi.DIpad
 
 	// set default frequency
 	if config.Frequency == 0 {
@@ -971,7 +976,7 @@ func (spi SPI) Configure(config SPIConfig) {
 	}
 
 	// Set synch speed for SPI
-	baudRate := (CPU_FREQUENCY / (2 * config.Frequency)) - 1
+	baudRate := SERCOM_FREQ_REF / (2 * config.Frequency)
 	spi.Bus.BAUD.Set(uint8(baudRate))
 
 	// Enable SPI port.
