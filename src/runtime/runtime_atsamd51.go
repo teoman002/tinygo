@@ -5,6 +5,7 @@ package runtime
 import (
 	"device/arm"
 	"device/sam"
+	"machine"
 )
 
 type timeUnit int64
@@ -25,11 +26,11 @@ func init() {
 	//initADCClock()
 
 	// connect to USB CDC interface
-	//machine.UART0.Configure(machine.UARTConfig{})
+	machine.UART0.Configure(machine.UARTConfig{})
 }
 
 func putchar(c byte) {
-	//machine.UART0.WriteByte(c)
+	machine.UART0.WriteByte(c)
 }
 
 func initClocks() {
