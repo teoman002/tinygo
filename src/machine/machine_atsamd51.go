@@ -112,145 +112,207 @@ const (
 )
 
 // InitADC initializes the ADC.
-// func InitADC() {
-// 	// ADC Bias Calibration
-// 	// #define ADC_FUSES_BIASCAL_ADDR      (NVMCTRL_OTP4 + 4)
-// 	// #define ADC_FUSES_BIASCAL_Pos       3            /**< \brief (NVMCTRL_OTP4) ADC Bias Calibration */
-// 	// #define ADC_FUSES_BIASCAL_Msk       (0x7u << ADC_FUSES_BIASCAL_Pos)
-// 	// #define ADC_FUSES_BIASCAL(value)    ((ADC_FUSES_BIASCAL_Msk & ((value) << ADC_FUSES_BIASCAL_Pos)))
-// 	// #define ADC_FUSES_LINEARITY_0_ADDR  NVMCTRL_OTP4
-// 	// #define ADC_FUSES_LINEARITY_0_Pos   27           /**< \brief (NVMCTRL_OTP4) ADC Linearity bits 4:0 */
-// 	// #define ADC_FUSES_LINEARITY_0_Msk   (0x1Fu << ADC_FUSES_LINEARITY_0_Pos)
-// 	// #define ADC_FUSES_LINEARITY_0(value) ((ADC_FUSES_LINEARITY_0_Msk & ((value) << ADC_FUSES_LINEARITY_0_Pos)))
-// 	// #define ADC_FUSES_LINEARITY_1_ADDR  (NVMCTRL_OTP4 + 4)
-// 	// #define ADC_FUSES_LINEARITY_1_Pos   0            /**< \brief (NVMCTRL_OTP4) ADC Linearity bits 7:5 */
-// 	// #define ADC_FUSES_LINEARITY_1_Msk   (0x7u << ADC_FUSES_LINEARITY_1_Pos)
-// 	// #define ADC_FUSES_LINEARITY_1(value) ((ADC_FUSES_LINEARITY_1_Msk & ((value) << ADC_FUSES_LINEARITY_1_Pos)))
+func InitADC() {
+	// ADC Bias Calibration
+	// NVMCTRL_SW0 0x00800080
+	// #define ADC0_FUSES_BIASCOMP_ADDR    NVMCTRL_SW0
+	// #define ADC0_FUSES_BIASCOMP_Pos     2            /**< \brief (NVMCTRL_SW0) ADC Comparator Scaling */
+	// #define ADC0_FUSES_BIASCOMP_Msk     (_Ul(0x7) << ADC0_FUSES_BIASCOMP_Pos)
+	// #define ADC0_FUSES_BIASCOMP(value)  (ADC0_FUSES_BIASCOMP_Msk & ((value) << ADC0_FUSES_BIASCOMP_Pos))
 
-// 	biasFuse := *(*uint32)(unsafe.Pointer(uintptr(0x00806020) + 4))
-// 	bias := uint16(biasFuse>>3) & uint16(0x7)
+	// #define ADC0_FUSES_BIASR2R_ADDR     NVMCTRL_SW0
+	// #define ADC0_FUSES_BIASR2R_Pos      8            /**< \brief (NVMCTRL_SW0) ADC Bias R2R ampli scaling */
+	// #define ADC0_FUSES_BIASR2R_Msk      (_Ul(0x7) << ADC0_FUSES_BIASR2R_Pos)
+	// #define ADC0_FUSES_BIASR2R(value)   (ADC0_FUSES_BIASR2R_Msk & ((value) << ADC0_FUSES_BIASR2R_Pos))
 
-// 	// ADC Linearity bits 4:0
-// 	linearity0Fuse := *(*uint32)(unsafe.Pointer(uintptr(0x00806020)))
-// 	linearity := uint16(linearity0Fuse>>27) & uint16(0x1f)
+	// #define ADC0_FUSES_BIASREFBUF_ADDR  NVMCTRL_SW0
+	// #define ADC0_FUSES_BIASREFBUF_Pos   5            /**< \brief (NVMCTRL_SW0) ADC Bias Reference Buffer Scaling */
+	// #define ADC0_FUSES_BIASREFBUF_Msk   (_Ul(0x7) << ADC0_FUSES_BIASREFBUF_Pos)
+	// #define ADC0_FUSES_BIASREFBUF(value) (ADC0_FUSES_BIASREFBUF_Msk & ((value) << ADC0_FUSES_BIASREFBUF_Pos))
 
-// 	// ADC Linearity bits 7:5
-// 	linearity1Fuse := *(*uint32)(unsafe.Pointer(uintptr(0x00806020) + 4))
-// 	linearity |= uint16(linearity1Fuse) & uint16(0x7) << 5
+	// #define ADC1_FUSES_BIASCOMP_ADDR    NVMCTRL_SW0
+	// #define ADC1_FUSES_BIASCOMP_Pos     16           /**< \brief (NVMCTRL_SW0) ADC Comparator Scaling */
+	// #define ADC1_FUSES_BIASCOMP_Msk     (_Ul(0x7) << ADC1_FUSES_BIASCOMP_Pos)
+	// #define ADC1_FUSES_BIASCOMP(value)  (ADC1_FUSES_BIASCOMP_Msk & ((value) << ADC1_FUSES_BIASCOMP_Pos))
 
-// 	// set calibration
-// 	sam.ADC.CALIB.Set((bias << 8) | linearity)
+	// #define ADC1_FUSES_BIASR2R_ADDR     NVMCTRL_SW0
+	// #define ADC1_FUSES_BIASR2R_Pos      22           /**< \brief (NVMCTRL_SW0) ADC Bias R2R ampli scaling */
+	// #define ADC1_FUSES_BIASR2R_Msk      (_Ul(0x7) << ADC1_FUSES_BIASR2R_Pos)
+	// #define ADC1_FUSES_BIASR2R(value)   (ADC1_FUSES_BIASR2R_Msk & ((value) << ADC1_FUSES_BIASR2R_Pos))
 
-// 	// Wait for synchronization
-// 	waitADCSync()
+	// #define ADC1_FUSES_BIASREFBUF_ADDR  NVMCTRL_SW0
+	// #define ADC1_FUSES_BIASREFBUF_Pos   19           /**< \brief (NVMCTRL_SW0) ADC Bias Reference Buffer Scaling */
+	// #define ADC1_FUSES_BIASREFBUF_Msk   (_Ul(0x7) << ADC1_FUSES_BIASREFBUF_Pos)
+	// #define ADC1_FUSES_BIASREFBUF(value) (ADC1_FUSES_BIASREFBUF_Msk & ((value) << ADC1_FUSES_BIASREFBUF_Pos))
 
-// 	// Divide Clock by 32 with 12 bits resolution as default
-// 	sam.ADC.CTRLB.Set((sam.ADC_CTRLB_PRESCALER_DIV32 << sam.ADC_CTRLB_PRESCALER_Pos) |
-// 		(sam.ADC_CTRLB_RESSEL_12BIT << sam.ADC_CTRLB_RESSEL_Pos))
+	adcFuse := *(*uint32)(unsafe.Pointer(uintptr(0x00800080)))
 
-// 	// Sampling Time Length
-// 	sam.ADC.SAMPCTRL.Set(5)
+	// uint32_t biascomp = (*((uint32_t *)ADC0_FUSES_BIASCOMP_ADDR) & ADC0_FUSES_BIASCOMP_Msk) >> ADC0_FUSES_BIASCOMP_Pos;
+	biascomp := (adcFuse & uint32(0x7<<2)) //>> 2
 
-// 	// Wait for synchronization
-// 	waitADCSync()
+	// uint32_t biasr2r = (*((uint32_t *)ADC0_FUSES_BIASR2R_ADDR) & ADC0_FUSES_BIASR2R_Msk) >> ADC0_FUSES_BIASR2R_Pos;
+	biasr2r := (adcFuse & uint32(0x7<<8)) //>> 8
 
-// 	// Use internal ground
-// 	sam.ADC.INPUTCTRL.Set(sam.ADC_INPUTCTRL_MUXNEG_GND << sam.ADC_INPUTCTRL_MUXNEG_Pos)
+	// uint32_t biasref = (*((uint32_t *)ADC0_FUSES_BIASREFBUF_ADDR) & ADC0_FUSES_BIASREFBUF_Msk) >> ADC0_FUSES_BIASREFBUF_Pos;
+	biasref := (adcFuse & uint32(0x7<<5)) //>> 5
 
-// 	// Averaging (see datasheet table in AVGCTRL register description)
-// 	sam.ADC.AVGCTRL.Set((sam.ADC_AVGCTRL_SAMPLENUM_1 << sam.ADC_AVGCTRL_SAMPLENUM_Pos) |
-// 		(0x0 << sam.ADC_AVGCTRL_ADJRES_Pos))
+	// calibrate ADC0
+	sam.ADC0.CALIB.Set(uint16(biascomp | biasr2r | biasref))
 
-// 	// Analog Reference is AREF pin (3.3v)
-// 	sam.ADC.INPUTCTRL.SetBits(sam.ADC_INPUTCTRL_GAIN_DIV2 << sam.ADC_INPUTCTRL_GAIN_Pos)
+	// biascomp = (*((uint32_t *)ADC1_FUSES_BIASCOMP_ADDR) & ADC1_FUSES_BIASCOMP_Msk) >> ADC1_FUSES_BIASCOMP_Pos;
+	biascomp = (adcFuse & uint32(0x7<<16)) //>> 16
 
-// 	// 1/2 VDDANA = 0.5 * 3V3 = 1.65V
-// 	sam.ADC.REFCTRL.SetBits(sam.ADC_REFCTRL_REFSEL_INTVCC1 << sam.ADC_REFCTRL_REFSEL_Pos)
-// }
+	// biasr2r = (*((uint32_t *)ADC1_FUSES_BIASR2R_ADDR) & ADC1_FUSES_BIASR2R_Msk) >> ADC1_FUSES_BIASR2R_Pos;
+	biasr2r = (adcFuse & uint32(0x7<<22)) //>> 22
+
+	// biasref = (*((uint32_t *)ADC1_FUSES_BIASREFBUF_ADDR) & ADC1_FUSES_BIASREFBUF_Msk) >> ADC1_FUSES_BIASREFBUF_Pos;
+	biasref = (adcFuse & uint32(0x7<<19)) //>> 19
+
+	// calibrate ADC1
+	sam.ADC1.CALIB.Set(uint16((biascomp | biasr2r | biasref) >> 16))
+
+	sam.ADC0.CTRLA.SetBits(sam.ADC_CTRLA_PRESCALER_DIV32 << sam.ADC_CTRLA_PRESCALER_Pos)
+	// adcs[i]->CTRLB.bit.RESSEL = ADC_CTRLB_RESSEL_10BIT_Val;
+	sam.ADC0.CTRLB.SetBits(sam.ADC_CTRLB_RESSEL_10BIT << sam.ADC_CTRLB_RESSEL_Pos)
+
+	// wait for sync
+	for sam.ADC0.SYNCBUSY.HasBits(sam.ADC_SYNCBUSY_CTRLB) {
+	}
+
+	// sampling Time Length
+	sam.ADC0.SAMPCTRL.Set(5)
+
+	// wait for sync
+	for sam.ADC0.SYNCBUSY.HasBits(sam.ADC_SYNCBUSY_SAMPCTRL) {
+	}
+
+	// No Negative input (Internal Ground)
+	sam.ADC0.INPUTCTRL.Set(sam.ADC_INPUTCTRL_MUXNEG_GND << sam.ADC_INPUTCTRL_MUXNEG_Pos)
+
+	// wait for sync
+	for sam.ADC0.SYNCBUSY.HasBits(sam.ADC_SYNCBUSY_INPUTCTRL) {
+	}
+
+	// Averaging (see datasheet table in AVGCTRL register description)
+	// 1 sample only (no oversampling nor averaging), adjusting result by 0
+	sam.ADC0.AVGCTRL.Set(sam.ADC_AVGCTRL_SAMPLENUM_1 | (0 << sam.ADC_AVGCTRL_ADJRES_Pos))
+
+	// wait for sync
+	for sam.ADC0.SYNCBUSY.HasBits(sam.ADC_SYNCBUSY_AVGCTRL) {
+	}
+
+	// same for ADC1, as for ADC0
+	sam.ADC1.CTRLA.SetBits(sam.ADC_CTRLA_PRESCALER_DIV32 << sam.ADC_CTRLA_PRESCALER_Pos)
+	sam.ADC1.CTRLB.SetBits(sam.ADC_CTRLB_RESSEL_10BIT << sam.ADC_CTRLB_RESSEL_Pos)
+	for sam.ADC1.SYNCBUSY.HasBits(sam.ADC_SYNCBUSY_CTRLB) {
+	}
+	sam.ADC1.SAMPCTRL.Set(5)
+	for sam.ADC1.SYNCBUSY.HasBits(sam.ADC_SYNCBUSY_SAMPCTRL) {
+	}
+	sam.ADC1.INPUTCTRL.Set(sam.ADC_INPUTCTRL_MUXNEG_GND << sam.ADC_INPUTCTRL_MUXNEG_Pos)
+	for sam.ADC1.SYNCBUSY.HasBits(sam.ADC_SYNCBUSY_INPUTCTRL) {
+	}
+	sam.ADC1.AVGCTRL.Set(sam.ADC_AVGCTRL_SAMPLENUM_1 | (0 << sam.ADC_AVGCTRL_ADJRES_Pos))
+	for sam.ADC1.SYNCBUSY.HasBits(sam.ADC_SYNCBUSY_AVGCTRL) {
+	}
+
+	// wait for sync
+	for sam.ADC0.SYNCBUSY.HasBits(sam.ADC_SYNCBUSY_REFCTRL) {
+	}
+	for sam.ADC1.SYNCBUSY.HasBits(sam.ADC_SYNCBUSY_REFCTRL) {
+	}
+
+	// default is 3V3 reference voltage
+	sam.ADC0.REFCTRL.SetBits(sam.ADC_REFCTRL_REFSEL_INTVCC1)
+	sam.ADC1.REFCTRL.SetBits(sam.ADC_REFCTRL_REFSEL_INTVCC1)
+}
 
 // Configure configures a ADCPin to be able to be used to read data.
-// func (a ADC) Configure() {
-// 	a.Pin.Configure(PinConfig{Mode: PinAnalog})
-// 	return
-// }
+func (a ADC) Configure() {
+	a.Pin.Configure(PinConfig{Mode: PinAnalog})
+}
 
 // Get returns the current value of a ADC pin, in the range 0..0xffff.
-// func (a ADC) Get() uint16 {
-// 	ch := a.getADCChannel()
+func (a ADC) Get() uint16 {
+	bus := a.getADCBus()
+	ch := a.getADCChannel()
 
-// 	// Selection for the positive ADC input
-// 	sam.ADC.INPUTCTRL.ClearBits(sam.ADC_INPUTCTRL_MUXPOS_Msk)
-// 	waitADCSync()
-// 	sam.ADC.INPUTCTRL.SetBits(uint32(ch << sam.ADC_INPUTCTRL_MUXPOS_Pos))
-// 	waitADCSync()
+	for bus.SYNCBUSY.HasBits(sam.ADC_SYNCBUSY_INPUTCTRL) {
+	}
 
-// 	// Select internal ground for ADC input
-// 	sam.ADC.INPUTCTRL.ClearBits(sam.ADC_INPUTCTRL_MUXNEG_Msk)
-// 	waitADCSync()
-// 	sam.ADC.INPUTCTRL.SetBits(sam.ADC_INPUTCTRL_MUXNEG_GND << sam.ADC_INPUTCTRL_MUXNEG_Pos)
-// 	waitADCSync()
+	// Selection for the positive ADC input
+	bus.INPUTCTRL.ClearBits(sam.ADC_INPUTCTRL_MUXPOS_Msk)
+	for bus.SYNCBUSY.HasBits(sam.ADC_SYNCBUSY_ENABLE) {
+	}
+	bus.INPUTCTRL.SetBits(uint16(ch << sam.ADC_INPUTCTRL_MUXPOS_Pos))
+	for bus.SYNCBUSY.HasBits(sam.ADC_SYNCBUSY_ENABLE) {
+	}
 
-// 	// Enable ADC
-// 	sam.ADC.CTRLA.SetBits(sam.ADC_CTRLA_ENABLE)
-// 	waitADCSync()
+	// Enable ADC
+	bus.CTRLA.SetBits(sam.ADC_CTRLA_ENABLE)
+	for bus.SYNCBUSY.HasBits(sam.ADC_SYNCBUSY_ENABLE) {
+	}
 
-// 	// Start conversion
-// 	sam.ADC.SWTRIG.SetBits(sam.ADC_SWTRIG_START)
-// 	waitADCSync()
+	// Start conversion
+	bus.SWTRIG.SetBits(sam.ADC_SWTRIG_START)
+	for !bus.INTFLAG.HasBits(sam.ADC_INTFLAG_RESRDY) {
+	}
 
-// 	// Clear the Data Ready flag
-// 	sam.ADC.INTFLAG.SetBits(sam.ADC_INTFLAG_RESRDY)
-// 	waitADCSync()
+	// Clear the Data Ready flag
+	bus.INTFLAG.SetBits(sam.ADC_INTFLAG_RESRDY)
+	for bus.SYNCBUSY.HasBits(sam.ADC_SYNCBUSY_ENABLE) {
+	}
 
-// 	// Start conversion again, since first conversion after reference voltage changed is invalid.
-// 	sam.ADC.SWTRIG.SetBits(sam.ADC_SWTRIG_START)
-// 	waitADCSync()
+	// Start conversion again, since first conversion after reference voltage changed is invalid.
+	bus.SWTRIG.SetBits(sam.ADC_SWTRIG_START)
 
-// 	// Waiting for conversion to complete
-// 	for !sam.ADC.INTFLAG.HasBits(sam.ADC_INTFLAG_RESRDY) {
-// 	}
-// 	val := sam.ADC.RESULT.Get()
+	// Waiting for conversion to complete
+	for !bus.INTFLAG.HasBits(sam.ADC_INTFLAG_RESRDY) {
+	}
+	val := bus.RESULT.Get()
 
-// 	// Disable ADC
-// 	sam.ADC.CTRLA.ClearBits(sam.ADC_CTRLA_ENABLE)
-// 	waitADCSync()
+	// Disable ADC
+	for bus.SYNCBUSY.HasBits(sam.ADC_SYNCBUSY_ENABLE) {
+	}
+	bus.CTRLA.ClearBits(sam.ADC_CTRLA_ENABLE)
+	for bus.SYNCBUSY.HasBits(sam.ADC_SYNCBUSY_ENABLE) {
+	}
 
-// 	return uint16(val) << 4 // scales from 12 to 16-bit result
-// }
+	return uint16(val) << 4 // scales from 12 to 16-bit result
+}
 
-// func (a ADC) getADCChannel() uint8 {
-// 	switch a.Pin {
-// 	case PA02:
-// 		return 0
-// 	case PB08:
-// 		return 2
-// 	case PB09:
-// 		return 3
-// 	case PA04:
-// 		return 4
-// 	case PA05:
-// 		return 5
-// 	case PA06:
-// 		return 6
-// 	case PA07:
-// 		return 7
-// 	case PB02:
-// 		return 10
-// 	case PB03:
-// 		return 11
-// 	case PA09:
-// 		return 17
-// 	case PA11:
-// 		return 19
-// 	default:
-// 		return 0
-// 	}
-// }
+func (a ADC) getADCBus() *sam.ADC_Type {
+	return sam.ADC0
+}
 
-// func waitADCSync() {
-// 	for sam.ADC.STATUS.HasBits(sam.ADC_STATUS_SYNCBUSY) {
-// 	}
-// }
+func (a ADC) getADCChannel() uint8 {
+	switch a.Pin {
+	case PA02:
+		return 0
+	case PB08:
+		return 2
+	case PB09:
+		return 3
+	case PA04:
+		return 4
+	case PA05:
+		return 5
+	case PA06:
+		return 6
+	case PA07:
+		return 7
+	case PB02:
+		return 10
+	case PB03:
+		return 11
+	case PA09:
+		return 17
+	case PA11:
+		return 19
+	default:
+		return 0
+	}
+}
 
 // UART on the SAMD51.
 type UART struct {
