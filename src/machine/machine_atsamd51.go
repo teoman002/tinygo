@@ -423,7 +423,7 @@ func handleUART1() {
 	UART1.Bus.INTFLAG.SetBits(sam.SERCOM_USART_INTFLAG_RXC)
 }
 
-// I2C on the SAMD21.
+// I2C on the SAMD51.
 type I2C struct {
 	Bus     *sam.SERCOM_I2CM_Type
 	SCL     Pin
@@ -439,6 +439,9 @@ type I2CConfig struct {
 }
 
 const (
+	// SERCOM_FREQ_REF is always reference frequency on SAMD51 regardless of CPU speed.
+	SERCOM_FREQ_REF = 48000000
+
 	// Default rise time in nanoseconds, based on 4.7K ohm pull up resistors
 	riseTimeNanoseconds = 125
 
@@ -495,9 +498,9 @@ func (i2c I2C) Configure(config I2CConfig) {
 
 // SetBaudRate sets the communication speed for the I2C.
 func (i2c I2C) SetBaudRate(br uint32) {
-	// Synchronous arithmetic baudrate, via Arduino SAMD implementation:
-	// SystemCoreClock / ( 2 * baudrate) - 5 - (((SystemCoreClock / 1000000) * WIRE_RISE_TIME_NANOSECONDS) / (2 * 1000));
-	baud := CPU_FREQUENCY/(2*br) - 5 - (((CPU_FREQUENCY / 1000000) * riseTimeNanoseconds) / (2 * 1000))
+	// Synchronous arithmetic baudrate, via Adafruit SAMD51 implementation:
+	// sercom->I2CM.BAUD.bit.BAUD = SERCOM_FREQ_REF / ( 2 * baudrate) - 1 ;
+	baud := SERCOM_FREQ_REF/(2*br) - 1
 	i2c.Bus.BAUD.Set(baud)
 }
 
@@ -1660,7 +1663,7 @@ func cdcSetup(setup usbSetup) bool {
 		if setup.bRequest == usb_CDC_SET_LINE_CODING || setup.bRequest == usb_CDC_SET_CONTROL_LINE_STATE {
 			// auto-reset into the bootloader
 			if usbLineInfo.dwDTERate == 1200 && usbLineInfo.lineState&usb_CDC_LINESTATE_DTR == 0 {
-				// TODO: ResetProcessor()
+				ResetProcessor()
 			} else {
 				// TODO: cancel any reset
 			}
@@ -2100,4 +2103,16 @@ func setEPINTENSET(ep uint32, val uint8) {
 	default:
 		return
 	}
+}
+
+// ResetProcessor should perform a system reset in preperation
+// to switch to the bootloader to flash new firmware.
+func ResetProcessor() {
+	arm.DisableInterrupts()
+
+	// Perform magic reset into bootloader, as mentioned in
+	// https://github.com/arduino/ArduinoCore-samd/issues/197
+	*(*uint32)(unsafe.Pointer(uintptr(0x20000000 + 0x00030000 - 4))) = RESET_MAGIC_VALUE
+
+	arm.SystemReset()
 }
