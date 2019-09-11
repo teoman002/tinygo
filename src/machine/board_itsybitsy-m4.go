@@ -47,8 +47,8 @@ const (
 
 // UART1 pins
 const (
-	UART_TX_PIN = D10
-	UART_RX_PIN = D11
+	UART_TX_PIN = D1
+	UART_RX_PIN = D0
 )
 
 // I2C pins

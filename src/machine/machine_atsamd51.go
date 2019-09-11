@@ -318,14 +318,18 @@ func (a ADC) getADCChannel() uint8 {
 type UART struct {
 	Buffer *RingBuffer
 	Bus    *sam.SERCOM_USART_Type
+	Mode   PinMode
 }
 
 var (
 	// UART0 is actually a USB CDC interface.
 	UART0 = USBCDC{Buffer: NewRingBuffer()}
 
-	// The first hardware serial port on the SAMD21. Uses the SERCOM3 interface.
-	UART1 = UART{Bus: sam.SERCOM3_USART, Buffer: NewRingBuffer()}
+	// The first hardware serial port on the SAMD51. Uses the SERCOM3 interface.
+	UART1 = UART{Bus: sam.SERCOM3_USART,
+		Buffer: NewRingBuffer(),
+		Mode:   PinSERCOMAlt,
+	}
 )
 
 const (
@@ -388,8 +392,8 @@ func (uart UART) Configure(config UARTConfig) {
 	}
 
 	// configure pins
-	config.TX.Configure(PinConfig{Mode: PinSERCOM})
-	config.RX.Configure(PinConfig{Mode: PinSERCOM})
+	config.TX.Configure(PinConfig{Mode: uart.Mode})
+	config.RX.Configure(PinConfig{Mode: uart.Mode})
 
 	// reset SERCOM0
 	uart.Bus.CTRLA.SetBits(sam.SERCOM_USART_CTRLA_SWRST)
@@ -440,19 +444,11 @@ func (uart UART) Configure(config UARTConfig) {
 	// setup interrupt on receive
 	uart.Bus.INTENSET.Set(sam.SERCOM_USART_INTENSET_RXC)
 
-	// Enable RX IRQ.
-	arm.EnableIRQ(sam.IRQ_SERCOM0_0)
-	arm.EnableIRQ(sam.IRQ_SERCOM0_1)
-	arm.EnableIRQ(sam.IRQ_SERCOM0_2)
-	arm.EnableIRQ(sam.IRQ_SERCOM0_OTHER)
-
-	// if config.TX == PA10 {
-	// 	// UART0
-	// 	arm.EnableIRQ(sam.IRQ_SERCOM0)
-	// } else {
-	// 	// UART1 which is the normal default, since UART0 is used for USBCDC.
-	// 	arm.EnableIRQ(sam.IRQ_SERCOM1)
-	// }
+	// Enable RX IRQ. Currently assumes SERCOM3.
+	arm.EnableIRQ(sam.IRQ_SERCOM3_0)
+	arm.EnableIRQ(sam.IRQ_SERCOM3_1)
+	arm.EnableIRQ(sam.IRQ_SERCOM3_2)
+	arm.EnableIRQ(sam.IRQ_SERCOM3_OTHER)
 }
 
 // SetBaudRate sets the communication speed for the UART.
@@ -461,7 +457,7 @@ func (uart UART) SetBaudRate(br uint32) {
 	//   BAUD = fref / (sampleRateValue * fbaud)
 	// (multiply by 8, to calculate fractional piece)
 	// uint32_t baudTimes8 = (SystemCoreClock * 8) / (16 * baudrate);
-	baud := (CPU_FREQUENCY * 8) / (sampleRate16X * br)
+	baud := (SERCOM_FREQ_REF * 8) / (sampleRate16X * br)
 
 	// sercom->USART.BAUD.FRAC.FP   = (baudTimes8 % 8);
 	// sercom->USART.BAUD.FRAC.BAUD = (baudTimes8 / 8);
@@ -478,7 +474,26 @@ func (uart UART) WriteByte(c byte) error {
 	return nil
 }
 
-//go:export SERCOM3_IRQHandler
+//go:export SERCOM3_0_IRQHandler
+func handleSERCOM3_0() {
+	handleUART1()
+}
+
+//go:export SERCOM3_1_IRQHandler
+func handleSERCOM3_1() {
+	handleUART1()
+}
+
+//go:export SERCOM3_2_IRQHandler
+func handleSERCOM3_2() {
+	handleUART1()
+}
+
+//go:export SERCOM3_OTHER_IRQHandler
+func handleSERCOM3_OTHER() {
+	handleUART1()
+}
+
 func handleUART1() {
 	// should reset IRQ
 	UART1.Receive(byte((UART1.Bus.DATA.Get() & 0xFF)))
