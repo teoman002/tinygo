@@ -38,8 +38,9 @@ const (
 	PinInput         PinMode = 15
 	PinInputPullup   PinMode = 16
 	PinOutput        PinMode = 17
-	PinPWM           PinMode = PinTimer
-	PinPWMAlt        PinMode = PinTimerAlt
+	PinPWME          PinMode = PinTimer
+	PinPWMF          PinMode = PinTimerAlt
+	PinPWMG          PinMode = PinTCCPDEC
 	PinInputPulldown PinMode = 18
 )
 
@@ -736,235 +737,6 @@ func (i2c I2C) readByte() byte {
 	return byte(i2c.Bus.DATA.Get())
 }
 
-// I2S on the SAMD21.
-
-// I2S
-// type I2S struct {
-// 	Bus *sam.I2S_Type
-// }
-
-// Configure is used to configure the I2S interface. You must call this
-// before you can use the I2S bus.
-// func (i2s I2S) Configure(config I2SConfig) {
-// 	// handle defaults
-// 	if config.SCK == 0 {
-// 		config.SCK = I2S_SCK_PIN
-// 		config.WS = I2S_WS_PIN
-// 		config.SD = I2S_SD_PIN
-// 	}
-
-// 	if config.AudioFrequency == 0 {
-// 		config.AudioFrequency = 48000
-// 	}
-
-// 	if config.DataFormat == I2SDataFormatDefault {
-// 		if config.Stereo {
-// 			config.DataFormat = I2SDataFormat16bit
-// 		} else {
-// 			config.DataFormat = I2SDataFormat32bit
-// 		}
-// 	}
-
-// 	// Turn on clock for I2S
-// 	sam.PM.APBCMASK.SetBits(sam.PM_APBCMASK_I2S_)
-
-// 	// setting clock rate for sample.
-// 	division_factor := CPU_FREQUENCY / (config.AudioFrequency * uint32(config.DataFormat))
-
-// 	// Switch Generic Clock Generator 3 to DFLL48M.
-// 	sam.GCLK.GENDIV.Set((sam.GCLK_CLKCTRL_GEN_GCLK3 << sam.GCLK_GENDIV_ID_Pos) |
-// 		(division_factor << sam.GCLK_GENDIV_DIV_Pos))
-// 	waitForSync()
-
-// 	sam.GCLK.GENCTRL.Set((sam.GCLK_CLKCTRL_GEN_GCLK3 << sam.GCLK_GENCTRL_ID_Pos) |
-// 		(sam.GCLK_GENCTRL_SRC_DFLL48M << sam.GCLK_GENCTRL_SRC_Pos) |
-// 		sam.GCLK_GENCTRL_IDC |
-// 		sam.GCLK_GENCTRL_GENEN)
-// 	waitForSync()
-
-// 	// Use Generic Clock Generator 3 as source for I2S.
-// 	sam.GCLK.CLKCTRL.Set((sam.GCLK_CLKCTRL_ID_I2S_0 << sam.GCLK_CLKCTRL_ID_Pos) |
-// 		(sam.GCLK_CLKCTRL_GEN_GCLK3 << sam.GCLK_CLKCTRL_GEN_Pos) |
-// 		sam.GCLK_CLKCTRL_CLKEN)
-// 	waitForSync()
-
-// 	// reset the device
-// 	i2s.Bus.CTRLA.SetBits(sam.I2S_CTRLA_SWRST)
-// 	for i2s.Bus.SYNCBUSY.HasBits(sam.I2S_SYNCBUSY_SWRST) {
-// 	}
-
-// 	// disable device before continuing
-// 	for i2s.Bus.SYNCBUSY.HasBits(sam.I2S_SYNCBUSY_ENABLE) {
-// 	}
-// 	i2s.Bus.CTRLA.ClearBits(sam.I2S_CTRLA_ENABLE)
-
-// 	// setup clock
-// 	if config.ClockSource == I2SClockSourceInternal {
-// 		// TODO: make sure correct for I2S output
-
-// 		// set serial clock select pin
-// 		i2s.Bus.CLKCTRL0.SetBits(sam.I2S_CLKCTRL_SCKSEL)
-
-// 		// set frame select pin
-// 		i2s.Bus.CLKCTRL0.SetBits(sam.I2S_CLKCTRL_FSSEL)
-// 	} else {
-// 		// Configure FS generation from SCK clock.
-// 		i2s.Bus.CLKCTRL0.ClearBits(sam.I2S_CLKCTRL_FSSEL)
-// 	}
-
-// 	if config.Standard == I2StandardPhilips {
-// 		// set 1-bit delay
-// 		i2s.Bus.CLKCTRL0.SetBits(sam.I2S_CLKCTRL_BITDELAY)
-// 	} else {
-// 		// set 0-bit delay
-// 		i2s.Bus.CLKCTRL0.ClearBits(sam.I2S_CLKCTRL_BITDELAY)
-// 	}
-
-// 	// set number of slots.
-// 	if config.Stereo {
-// 		i2s.Bus.CLKCTRL0.SetBits(1 << sam.I2S_CLKCTRL_NBSLOTS_Pos)
-// 	} else {
-// 		i2s.Bus.CLKCTRL0.ClearBits(1 << sam.I2S_CLKCTRL_NBSLOTS_Pos)
-// 	}
-
-// 	// set slot size
-// 	switch config.DataFormat {
-// 	case I2SDataFormat8bit:
-// 		i2s.Bus.CLKCTRL0.SetBits(sam.I2S_CLKCTRL_SLOTSIZE_8)
-
-// 	case I2SDataFormat16bit:
-// 		i2s.Bus.CLKCTRL0.SetBits(sam.I2S_CLKCTRL_SLOTSIZE_16)
-
-// 	case I2SDataFormat24bit:
-// 		i2s.Bus.CLKCTRL0.SetBits(sam.I2S_CLKCTRL_SLOTSIZE_24)
-
-// 	case I2SDataFormat32bit:
-// 		i2s.Bus.CLKCTRL0.SetBits(sam.I2S_CLKCTRL_SLOTSIZE_32)
-// 	}
-
-// 	// configure pin for clock
-// 	config.SCK.Configure(PinConfig{Mode: PinCom})
-
-// 	// configure pin for WS, if needed
-// 	if config.WS != NoPin {
-// 		config.WS.Configure(PinConfig{Mode: PinCom})
-// 	}
-
-// 	// now set serializer data size.
-// 	switch config.DataFormat {
-// 	case I2SDataFormat8bit:
-// 		i2s.Bus.SERCTRL1.SetBits(sam.I2S_SERCTRL_DATASIZE_8)
-
-// 	case I2SDataFormat16bit:
-// 		i2s.Bus.SERCTRL1.SetBits(sam.I2S_SERCTRL_DATASIZE_16)
-
-// 	case I2SDataFormat24bit:
-// 		i2s.Bus.SERCTRL1.SetBits(sam.I2S_SERCTRL_DATASIZE_24)
-
-// 	case I2SDataFormat32bit:
-// 	case I2SDataFormatDefault:
-// 		i2s.Bus.SERCTRL1.SetBits(sam.I2S_SERCTRL_DATASIZE_32)
-// 	}
-
-// 	// set serializer slot adjustment
-// 	if config.Standard == I2SStandardLSB {
-// 		// adjust right
-// 		i2s.Bus.SERCTRL1.ClearBits(sam.I2S_SERCTRL_SLOTADJ)
-// 	} else {
-// 		// adjust left
-// 		i2s.Bus.SERCTRL1.SetBits(sam.I2S_SERCTRL_SLOTADJ)
-
-// 		// reverse bit order?
-// 		i2s.Bus.SERCTRL1.SetBits(sam.I2S_SERCTRL_BITREV)
-// 	}
-
-// 	// set serializer mode.
-// 	if config.Mode == I2SModePDM {
-// 		i2s.Bus.SERCTRL1.SetBits(sam.I2S_SERCTRL_SERMODE_PDM2)
-// 	} else {
-// 		i2s.Bus.SERCTRL1.SetBits(sam.I2S_SERCTRL_SERMODE_RX)
-// 	}
-
-// 	// configure data pin
-// 	config.SD.Configure(PinConfig{Mode: PinCom})
-
-// 	// re-enable
-// 	i2s.Bus.CTRLA.SetBits(sam.I2S_CTRLA_ENABLE)
-// 	for i2s.Bus.SYNCBUSY.HasBits(sam.I2S_SYNCBUSY_ENABLE) {
-// 	}
-
-// 	// enable i2s clock
-// 	i2s.Bus.CTRLA.SetBits(sam.I2S_CTRLA_CKEN0)
-// 	for i2s.Bus.SYNCBUSY.HasBits(sam.I2S_SYNCBUSY_CKEN0) {
-// 	}
-
-// 	// enable i2s serializer
-// 	i2s.Bus.CTRLA.SetBits(sam.I2S_CTRLA_SEREN1)
-// 	for i2s.Bus.SYNCBUSY.HasBits(sam.I2S_SYNCBUSY_SEREN1) {
-// 	}
-// }
-
-// Read data from the I2S bus into the provided slice.
-// The I2S bus must already have been configured correctly.
-// func (i2s I2S) Read(p []uint32) (n int, err error) {
-// 	i := 0
-// 	for i = 0; i < len(p); i++ {
-// 		// Wait until ready
-// 		for !i2s.Bus.INTFLAG.HasBits(sam.I2S_INTFLAG_RXRDY1) {
-// 		}
-
-// 		for i2s.Bus.SYNCBUSY.HasBits(sam.I2S_SYNCBUSY_DATA1) {
-// 		}
-
-// 		// read data
-// 		p[i] = i2s.Bus.DATA1.Get()
-
-// 		// indicate read complete
-// 		i2s.Bus.INTFLAG.Set(sam.I2S_INTFLAG_RXRDY1)
-// 	}
-
-// 	return i, nil
-// }
-
-// Write data to the I2S bus from the provided slice.
-// The I2S bus must already have been configured correctly.
-// func (i2s I2S) Write(p []uint32) (n int, err error) {
-// 	i := 0
-// 	for i = 0; i < len(p); i++ {
-// 		// Wait until ready
-// 		for !i2s.Bus.INTFLAG.HasBits(sam.I2S_INTFLAG_TXRDY1) {
-// 		}
-
-// 		for i2s.Bus.SYNCBUSY.HasBits(sam.I2S_SYNCBUSY_DATA1) {
-// 		}
-
-// 		// write data
-// 		i2s.Bus.DATA1.Set(p[i])
-
-// 		// indicate write complete
-// 		i2s.Bus.INTFLAG.Set(sam.I2S_INTFLAG_TXRDY1)
-// 	}
-
-// 	return i, nil
-// }
-
-// Close the I2S bus.
-// func (i2s I2S) Close() error {
-// 	// Sync wait
-// 	for i2s.Bus.SYNCBUSY.HasBits(sam.I2S_SYNCBUSY_ENABLE) {
-// 	}
-
-// 	// disable I2S
-// 	i2s.Bus.CTRLA.ClearBits(sam.I2S_CTRLA_ENABLE)
-
-// 	return nil
-// }
-
-// func waitForSync() {
-// 	for sam.GCLK.SYNCBUSY.HasBits(sam.SERCOM_I2CM_SYNCBUSY_ENABLE) {
-// 	}
-// }
-
 // SPI
 type SPI struct {
 	Bus   *sam.SERCOM_SPI_Type
@@ -1079,189 +851,243 @@ func (spi SPI) Transfer(w byte) (byte, error) {
 const period = 0xFFFF
 
 // InitPWM initializes the PWM interface.
-// func InitPWM() {
-// 	// turn on timer clocks used for PWM
-// 	sam.PM.APBCMASK.SetBits(sam.PM_APBCMASK_TCC0_ | sam.PM_APBCMASK_TCC1_ | sam.PM_APBCMASK_TCC2_)
+func InitPWM() {
+	// turn on timer clocks used for PWM
+	sam.MCLK.APBBMASK.SetBits(sam.MCLK_APBBMASK_TCC0_ | sam.MCLK_APBBMASK_TCC1_)
+	sam.MCLK.APBCMASK.SetBits(sam.MCLK_APBCMASK_TCC2_)
 
-// 	// Use GCLK0 for TCC0/TCC1
-// 	sam.GCLK.CLKCTRL.Set((sam.GCLK_CLKCTRL_ID_TCC0_TCC1 << sam.GCLK_CLKCTRL_ID_Pos) |
-// 		(sam.GCLK_CLKCTRL_GEN_GCLK0 << sam.GCLK_CLKCTRL_GEN_Pos) |
-// 		sam.GCLK_CLKCTRL_CLKEN)
-// 	for sam.GCLK.STATUS.HasBits(sam.GCLK_STATUS_SYNCBUSY) {
-// 	}
-
-// 	// Use GCLK0 for TCC2/TC3
-// 	sam.GCLK.CLKCTRL.Set((sam.GCLK_CLKCTRL_ID_TCC2_TC3 << sam.GCLK_CLKCTRL_ID_Pos) |
-// 		(sam.GCLK_CLKCTRL_GEN_GCLK0 << sam.GCLK_CLKCTRL_GEN_Pos) |
-// 		sam.GCLK_CLKCTRL_CLKEN)
-// 	for sam.GCLK.STATUS.HasBits(sam.GCLK_STATUS_SYNCBUSY) {
-// 	}
-// }
+	//use clock generator 0
+	sam.GCLK.PCHCTRL25.Set((sam.GCLK_PCHCTRL_GEN_GCLK0 << sam.GCLK_PCHCTRL_GEN_Pos) |
+		sam.GCLK_PCHCTRL_CHEN)
+	sam.GCLK.PCHCTRL29.Set((sam.GCLK_PCHCTRL_GEN_GCLK0 << sam.GCLK_PCHCTRL_GEN_Pos) |
+		sam.GCLK_PCHCTRL_CHEN)
+}
 
 // Configure configures a PWM pin for output.
-// func (pwm PWM) Configure() {
-// 	// figure out which TCCX timer for this pin
-// 	timer := pwm.getTimer()
+func (pwm PWM) Configure() {
+	// Set pin as output
+	sam.PORT.DIRSET0.Set(1 << uint8(pwm.Pin))
+	// Set pin to low
+	sam.PORT.OUTCLR0.Set(1 << uint8(pwm.Pin))
 
-// 	// disable timer
-// 	timer.CTRLA.ClearBits(sam.TCC_CTRLA_ENABLE)
-// 	// Wait for synchronization
-// 	for timer.SYNCBUSY.HasBits(sam.TCC_SYNCBUSY_ENABLE) {
-// 	}
+	// Enable the port multiplexer for pin
+	pwm.setPinCfg(sam.PORT_PINCFG0_PMUXEN)
 
-// 	// Use "Normal PWM" (single-slope PWM)
-// 	timer.WAVE.SetBits(sam.TCC_WAVE_WAVEGEN_NPWM)
-// 	// Wait for synchronization
-// 	for timer.SYNCBUSY.HasBits(sam.TCC_SYNCBUSY_WAVE) {
-// 	}
+	// Connect timer/mux to pin.
+	pwmConfig := pwm.getMux()
 
-// 	// Set the period (the number to count to (TOP) before resetting timer)
-// 	//TCC0->PER.reg = period;
-// 	timer.PER.Set(period)
-// 	// Wait for synchronization
-// 	for timer.SYNCBUSY.HasBits(sam.TCC_SYNCBUSY_PER) {
-// 	}
+	if pwm.Pin&1 > 0 {
+		// odd pin, so save the even pins
+		val := pwm.getPMux() & sam.PORT_PMUX0_PMUXE_Msk
+		pwm.setPMux(val | uint8(pwmConfig<<sam.PORT_PMUX0_PMUXO_Pos))
+	} else {
+		// even pin, so save the odd pins
+		val := pwm.getPMux() & sam.PORT_PMUX0_PMUXO_Msk
+		pwm.setPMux(val | uint8(pwmConfig<<sam.PORT_PMUX0_PMUXE_Pos))
+	}
 
-// 	// Set pin as output
-// 	sam.PORT.DIRSET0.Set(1 << uint8(pwm.Pin))
-// 	// Set pin to low
-// 	sam.PORT.OUTCLR0.Set(1 << uint8(pwm.Pin))
+	// figure out which TCCX timer for this pin
+	timer := pwm.getTimer()
 
-// 	// Enable the port multiplexer for pin
-// 	pwm.setPinCfg(sam.PORT_PINCFG0_PMUXEN)
+	// disable timer
+	timer.CTRLA.ClearBits(sam.TCC_CTRLA_ENABLE)
+	// Wait for synchronization
+	for timer.SYNCBUSY.HasBits(sam.TCC_SYNCBUSY_ENABLE) {
+	}
 
-// 	// Connect TCCX timer to pin.
-// 	// we normally use the F channel aka ALT
-// 	pwmConfig := PinPWMAlt
+	// Set prescaler to 1/256
+	// TCCx->CTRLA.reg = TCC_CTRLA_PRESCALER_DIV256 | TCC_CTRLA_PRESCSYNC_GCLK;
+	timer.CTRLA.SetBits(sam.TCC_CTRLA_PRESCALER_DIV256 | sam.TCC_CTRLA_PRESCSYNC_GCLK)
 
-// 	// in the case of PA6 or PA7 we have to use E channel
-// 	if pwm.Pin == 6 || pwm.Pin == 7 {
-// 		pwmConfig = PinPWM
-// 	}
+	// Use "Normal PWM" (single-slope PWM)
+	timer.WAVE.SetBits(sam.TCC_WAVE_WAVEGEN_NPWM)
+	// Wait for synchronization
+	for timer.SYNCBUSY.HasBits(sam.TCC_SYNCBUSY_WAVE) {
+	}
 
-// 	if pwm.Pin&1 > 0 {
-// 		// odd pin, so save the even pins
-// 		val := pwm.getPMux() & sam.PORT_PMUX0_PMUXE_Msk
-// 		pwm.setPMux(val | uint8(pwmConfig<<sam.PORT_PMUX0_PMUXO_Pos))
-// 	} else {
-// 		// even pin, so save the odd pins
-// 		val := pwm.getPMux() & sam.PORT_PMUX0_PMUXO_Msk
-// 		pwm.setPMux(val | uint8(pwmConfig<<sam.PORT_PMUX0_PMUXE_Pos))
-// 	}
-// }
+	// while (TCCx->SYNCBUSY.bit.CC0 || TCCx->SYNCBUSY.bit.CC1);
+	for timer.SYNCBUSY.HasBits(sam.TCC_SYNCBUSY_CC0) ||
+		timer.SYNCBUSY.HasBits(sam.TCC_SYNCBUSY_CC1) {
+	}
+
+	// Set the initial value
+	// TCCx->CC[tcChannel].reg = (uint32_t) value;
+	pwm.setChannel(0)
+
+	for timer.SYNCBUSY.HasBits(sam.TCC_SYNCBUSY_CC0) ||
+		timer.SYNCBUSY.HasBits(sam.TCC_SYNCBUSY_CC1) {
+	}
+
+	// Set the period (the number to count to (TOP) before resetting timer)
+	//TCC0->PER.reg = period;
+	timer.PER.Set(period)
+	// Wait for synchronization
+	for timer.SYNCBUSY.HasBits(sam.TCC_SYNCBUSY_PER) {
+	}
+
+	// enable timer
+	timer.CTRLA.SetBits(sam.TCC_CTRLA_ENABLE)
+	// Wait for synchronization
+	for timer.SYNCBUSY.HasBits(sam.TCC_SYNCBUSY_ENABLE) {
+	}
+}
 
 // Set turns on the duty cycle for a PWM pin using the provided value.
-// func (pwm PWM) Set(value uint16) {
-// 	// figure out which TCCX timer for this pin
-// 	timer := pwm.getTimer()
+func (pwm PWM) Set(value uint16) {
+	// figure out which TCCX timer for this pin
+	timer := pwm.getTimer()
 
-// 	// disable output
-// 	timer.CTRLA.ClearBits(sam.TCC_CTRLA_ENABLE)
+	// Wait for synchronization
+	for timer.SYNCBUSY.HasBits(sam.TCC_SYNCBUSY_CTRLB) {
+	}
+	for timer.SYNCBUSY.HasBits(sam.TCC_SYNCBUSY_CC0) ||
+		timer.SYNCBUSY.HasBits(sam.TCC_SYNCBUSY_CC1) {
+	}
 
-// 	// Wait for synchronization
-// 	for timer.SYNCBUSY.HasBits(sam.TCC_SYNCBUSY_ENABLE) {
-// 	}
+	// TCCx->CCBUF[tcChannel].reg = (uint32_t) value;
+	pwm.setChannelBuffer(uint32(value))
 
-// 	// Set PWM signal to output duty cycle
-// 	pwm.setChannel(uint32(value))
+	for timer.SYNCBUSY.HasBits(sam.TCC_SYNCBUSY_CC0) ||
+		timer.SYNCBUSY.HasBits(sam.TCC_SYNCBUSY_CC1) {
+	}
 
-// 	// Wait for synchronization on all channels
-// 	for timer.SYNCBUSY.HasBits(sam.TCC_SYNCBUSY_CC0 |
-// 		sam.TCC_SYNCBUSY_CC1 |
-// 		sam.TCC_SYNCBUSY_CC2 |
-// 		sam.TCC_SYNCBUSY_CC3) {
-// 	}
-
-// 	// enable
-// 	timer.CTRLA.SetBits(sam.TCC_CTRLA_ENABLE)
-// 	// Wait for synchronization
-// 	for timer.SYNCBUSY.HasBits(sam.TCC_SYNCBUSY_ENABLE) {
-// 	}
-// }
+	// TCCx->CTRLBCLR.bit.LUPD = 1;
+	timer.CTRLBCLR.SetBits(sam.TCC_CTRLBCLR_LUPD)
+	for timer.SYNCBUSY.HasBits(sam.TCC_SYNCBUSY_CTRLB) {
+	}
+}
 
 // getPMux returns the value for the correct PMUX register for this pin.
-// func (pwm PWM) getPMux() uint8 {
-// 	return pwm.Pin.getPMux()
-// }
+func (pwm PWM) getPMux() uint8 {
+	return pwm.Pin.getPMux()
+}
 
 // setPMux sets the value for the correct PMUX register for this pin.
-// func (pwm PWM) setPMux(val uint8) {
-// 	pwm.Pin.setPMux(val)
-// }
+func (pwm PWM) setPMux(val uint8) {
+	pwm.Pin.setPMux(val)
+}
 
 // getPinCfg returns the value for the correct PINCFG register for this pin.
-// func (pwm PWM) getPinCfg() uint8 {
-// 	return pwm.Pin.getPinCfg()
-// }
+func (pwm PWM) getPinCfg() uint8 {
+	return pwm.Pin.getPinCfg()
+}
 
 // setPinCfg sets the value for the correct PINCFG register for this pin.
-// func (pwm PWM) setPinCfg(val uint8) {
-// 	pwm.Pin.setPinCfg(val)
-// }
+func (pwm PWM) setPinCfg(val uint8) {
+	pwm.Pin.setPinCfg(val)
+}
 
 // getTimer returns the timer to be used for PWM on this pin
-// func (pwm PWM) getTimer() *sam.TCC_Type {
-// 	switch pwm.Pin {
-// 	case 6:
-// 		return sam.TCC1
-// 	case 7:
-// 		return sam.TCC1
-// 	case 8:
-// 		return sam.TCC1
-// 	case 9:
-// 		return sam.TCC1
-// 	case 14:
-// 		return sam.TCC0
-// 	case 15:
-// 		return sam.TCC0
-// 	case 16:
-// 		return sam.TCC0
-// 	case 17:
-// 		return sam.TCC0
-// 	case 18:
-// 		return sam.TCC0
-// 	case 19:
-// 		return sam.TCC0
-// 	case 20:
-// 		return sam.TCC0
-// 	case 21:
-// 		return sam.TCC0
-// 	default:
-// 		return nil // not supported on this pin
-// 	}
-// }
+func (pwm PWM) getTimer() *sam.TCC_Type {
+	switch pwm.Pin {
+	case PA16:
+		return sam.TCC1
+	case PA17:
+		return sam.TCC1
+	case PA14:
+		return sam.TCC2
+	case PA15:
+		return sam.TCC2
+	case PA18:
+		return sam.TCC1
+	case PA19:
+		return sam.TCC1
+	case PA20:
+		return sam.TCC0
+	case PA21:
+		return sam.TCC0
+	case PA23:
+		return sam.TCC0
+	case PA22:
+		return sam.TCC0
+	default:
+		return nil // not supported on this pin
+	}
+}
 
 // setChannel sets the value for the correct channel for PWM on this pin
-// func (pwm PWM) setChannel(val uint32) {
-// 	switch pwm.Pin {
-// 	case 6:
-// 		pwm.getTimer().CC0.Set(val)
-// 	case 7:
-// 		pwm.getTimer().CC1.Set(val)
-// 	case 8:
-// 		pwm.getTimer().CC0.Set(val)
-// 	case 9:
-// 		pwm.getTimer().CC1.Set(val)
-// 	case 14:
-// 		pwm.getTimer().CC0.Set(val)
-// 	case 15:
-// 		pwm.getTimer().CC1.Set(val)
-// 	case 16:
-// 		pwm.getTimer().CC2.Set(val)
-// 	case 17:
-// 		pwm.getTimer().CC3.Set(val)
-// 	case 18:
-// 		pwm.getTimer().CC2.Set(val)
-// 	case 19:
-// 		pwm.getTimer().CC3.Set(val)
-// 	case 20:
-// 		pwm.getTimer().CC2.Set(val)
-// 	case 21:
-// 		pwm.getTimer().CC3.Set(val)
-// 	default:
-// 		return // not supported on this pin
-// 	}
-// }
+func (pwm PWM) setChannel(val uint32) {
+	switch pwm.Pin {
+	case PA16:
+		pwm.getTimer().CC0.Set(val)
+	case PA17:
+		pwm.getTimer().CC1.Set(val)
+	case PA14:
+		pwm.getTimer().CC0.Set(val)
+	case PA15:
+		pwm.getTimer().CC1.Set(val)
+	case PA18:
+		pwm.getTimer().CC2.Set(val)
+	case PA19:
+		pwm.getTimer().CC3.Set(val)
+	case PA20:
+		pwm.getTimer().CC0.Set(val)
+	case PA21:
+		pwm.getTimer().CC1.Set(val)
+	case PA23:
+		pwm.getTimer().CC3.Set(val)
+	case PA22:
+		pwm.getTimer().CC2.Set(val)
+	default:
+		return // not supported on this pin
+	}
+}
+
+// setChannelBuffer sets the value for the correct channel buffer for PWM on this pin
+func (pwm PWM) setChannelBuffer(val uint32) {
+	switch pwm.Pin {
+	case PA16:
+		pwm.getTimer().CCBUF0.Set(val)
+	case PA17:
+		pwm.getTimer().CCBUF1.Set(val)
+	case PA14:
+		pwm.getTimer().CCBUF0.Set(val)
+	case PA15:
+		pwm.getTimer().CCBUF1.Set(val)
+	case PA18:
+		pwm.getTimer().CCBUF2.Set(val)
+	case PA19:
+		pwm.getTimer().CCBUF3.Set(val)
+	case PA20:
+		pwm.getTimer().CCBUF0.Set(val)
+	case PA21:
+		pwm.getTimer().CCBUF1.Set(val)
+	case PA23:
+		pwm.getTimer().CCBUF3.Set(val)
+	case PA22:
+		pwm.getTimer().CCBUF2.Set(val)
+	default:
+		return // not supported on this pin
+	}
+}
+
+// getMux returns the pin mode mux to be used for PWM on this pin.
+func (pwm PWM) getMux() PinMode {
+	switch pwm.Pin {
+	case PA16:
+		return PinPWMF
+	case PA17:
+		return PinPWMF
+	case PA14:
+		return PinPWMF
+	case PA15:
+		return PinPWMF
+	case PA18:
+		return PinPWMF
+	case PA19:
+		return PinPWMF
+	case PA20:
+		return PinPWMG
+	case PA21:
+		return PinPWMG
+	case PA23:
+		return PinPWMG
+	case PA22:
+		return PinPWMG
+	default:
+		return 0 // not supported on this pin
+	}
+}
 
 // USBCDC is the USB CDC aka serial over USB interface on the SAMD21.
 type USBCDC struct {
