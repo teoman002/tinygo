@@ -620,6 +620,17 @@ func handleCompilerError(err error) {
 }
 
 func main() {
+	out, e := exec.Command("go", "version").Output()
+	if e != nil {
+		fmt.Fprintln(os.Stderr, e)
+		os.Exit(1)
+	}
+	version := string(out)
+	if !strings.Contains(version, "go1.11") && !strings.Contains(version, "go1.12") {
+		fmt.Fprintln(os.Stderr, "TinyGo requires Go version 1.11 or 1.12, not", version)
+		os.Exit(1)
+	}
+
 	outpath := flag.String("o", "", "output filename")
 	opt := flag.String("opt", "z", "optimization level: 0, 1, 2, s, z")
 	gc := flag.String("gc", "", "garbage collector to use (none, leaking, conservative)")
